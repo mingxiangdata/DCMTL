@@ -15,7 +15,7 @@ class DataLoader(object):
         self.seg_label_index_dict = seg_label_index_dict
         self.coarse_label_index_dict = coarse_label_index_dict
         self.fine_label_index_dict = fine_label_index_dict
-        self.data = list()
+        self.data = []
         self.data_size = 0
 
     def decode_line(self, line):
@@ -50,19 +50,19 @@ class DataLoader(object):
                 fine_label.append(0)  # O tag
 
         if input_len > self.max_seq_len:
-            input_idx = input_idx[0:self.max_seq_len]
-            seg_label = seg_label[0:self.max_seq_len]
-            coarse_label = coarse_label[0:self.max_seq_len]
-            fine_label = fine_label[0:self.max_seq_len]
+            input_idx = input_idx[:self.max_seq_len]
+            seg_label = seg_label[:self.max_seq_len]
+            coarse_label = coarse_label[:self.max_seq_len]
+            fine_label = fine_label[:self.max_seq_len]
             input_len = self.max_seq_len
 
         return input_idx, input_len, seg_label, coarse_label, fine_label
 
 
     def load(self, data_file, encoding):
+        input_idxs, input_lens, seg_labels, coarse_labels, fine_labels = list(), list(), list(), list(), list()
+        cnt = 0
         if os.path.isfile(data_file):
-            input_idxs, input_lens, seg_labels, coarse_labels, fine_labels = list(), list(), list(), list(), list()
-            cnt = 0
             with codecs.open(data_file, 'r', encoding=encoding) as fin:
                 for line in fin:
                     spt = line.strip().split("\t")
@@ -73,9 +73,7 @@ class DataLoader(object):
                     fine_labels.append([int(idx) for idx in spt[4].split(" ")])
                     cnt += 1
         else:
-            txt_data_file = data_file + ".name"
-            input_idxs, input_lens, seg_labels, coarse_labels, fine_labels = list(), list(), list(), list(), list()
-            cnt = 0
+            txt_data_file = f"{data_file}.name"
             fout = codecs.open(data_file, 'w', encoding=encoding)
             with codecs.open(txt_data_file, 'r', encoding=encoding) as fin:
                 for line in fin:
@@ -143,7 +141,7 @@ class VocabularyLoader(object):
     def __init__(self):
         self.vocab_size = 0
         self.index_vocab_dict = []
-        self.vocab_index_dict = dict()
+        self.vocab_index_dict = {}
         self.vocab_embedding = []
 
     def load_vocab(self, vocab_file, embedding_dim, encoding):
@@ -207,19 +205,16 @@ class LabelLoader(object):
     def __init__(self):
         self.label_size = 0
         self.index_label_dict = []
-        self.label_index_dict = dict()
+        self.label_index_dict = {}
 
     def load_label(self, label_file, encoding):
         self.label_size = 0
         self.index_label_dict = []
-        self.label_index_dict = dict()
+        self.label_index_dict = {}
 
         with codecs.open(label_file, 'r', encoding=encoding) as fin:
-            index = 0
-            for line in fin:
+            for index, line in enumerate(fin):
                 line = line.strip()
                 self.label_index_dict[line] = index
                 self.index_label_dict.append(line)
-                index += 1
-
         self.label_size = len(self.index_label_dict)

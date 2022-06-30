@@ -84,7 +84,7 @@ class NER(object):
         import os
         if not(os.path.isdir(dir_path)):
             os.mkdir(dir_path)
-        fp = dir_path + "/best_model"
+        fp = f"{dir_path}/best_model"
         return self.saver.save(sess, fp)
 
     def load(self, sess, fp):
@@ -114,8 +114,8 @@ def eval_seq_crf_with_o(y_pred_, y_true_, tag_dict, method='precision'):
         else:
             names.add(tag[2:])
 
-    correct = dict()
-    act_cnt = dict()
+    correct = {}
+    act_cnt = {}
     for name in names:
         correct[name] = 0
         act_cnt[name] = 0
@@ -130,7 +130,7 @@ def eval_seq_crf_with_o(y_pred_, y_true_, tag_dict, method='precision'):
                 # tags "O"
                 kind = 'O'
                 act_cnt[kind] += 1
-                if line_true[i] == line_pred[i]:
+                if line_true[i] == tag_num:
                     correct[kind] += 1
                 i += 1
                 continue
@@ -157,21 +157,15 @@ def eval_seq_crf_with_o(y_pred_, y_true_, tag_dict, method='precision'):
                 correct[kind] += 1
             i = j
 
-    ret = dict()
+    ret = {}
     keys = act_cnt.keys()
     correct_total = 0
     cnt_total = 0
     for key in keys:
-        if act_cnt[key] == 0:
-            ret[key] = 0.0
-        else:
-            ret[key] = correct[key] * 1.0 / act_cnt[key]
+        ret[key] = 0.0 if act_cnt[key] == 0 else correct[key] * 1.0 / act_cnt[key]
         correct_total += correct[key]
         cnt_total += act_cnt[key]
-        if cnt_total == 0:
-            overall = 0.0
-        else:
-            overall = correct_total * 1.0 / cnt_total
+        overall = 0.0 if cnt_total == 0 else correct_total * 1.0 / cnt_total
     return overall
 
 
@@ -191,15 +185,9 @@ def eval_seq_crf_no_o(y_pred_, y_true_, tag_dict, method='precision'):
         y_pred = np.array(y_true_)
         y_true = np.array(y_pred_)
 
-    names = set()
-    for tag in tag_dict:
-        if tag == 'O':
-            continue
-        else:
-            names.add(tag[2:])
-
-    correct = dict()
-    act_cnt = dict()
+    names = {tag[2:] for tag in tag_dict if tag != 'O'}
+    correct = {}
+    act_cnt = {}
     for name in names:
         correct[name] = 0
         act_cnt[name] = 0
@@ -237,19 +225,13 @@ def eval_seq_crf_no_o(y_pred_, y_true_, tag_dict, method='precision'):
                 correct[kind] += 1
             i = j
 
-    ret = dict()
+    ret = {}
     keys = act_cnt.keys()
     correct_total = 0
     cnt_total = 0
     for key in keys:
-        if act_cnt[key] == 0:
-            ret[key] = 0.0
-        else:
-            ret[key] = correct[key] * 1.0 / act_cnt[key]
+        ret[key] = 0.0 if act_cnt[key] == 0 else correct[key] * 1.0 / act_cnt[key]
         correct_total += correct[key]
         cnt_total += act_cnt[key]
-        if cnt_total == 0:
-            overall = 0.0
-        else:
-            overall = correct_total * 1.0 / cnt_total
+        overall = 0.0 if cnt_total == 0 else correct_total * 1.0 / cnt_total
     return overall
